@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { styled as muiStyled, createTheme, ThemeProvider } from '@mui/material/styles';
+import { styled as muiStyled, createTheme, ThemeProvider, alpha } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import MuiDrawer from '@mui/material/Drawer';
 import Box from '@mui/material/Box';
@@ -8,16 +8,20 @@ import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import MenuIcon from '@mui/icons-material/Menu';
+import { MenuProps } from '@mui/material/Menu';
 import AddIcon from '@mui/icons-material/Add';
 import { mainListItemsArray } from './listItems';
-import { Avatar, Badge, Input, InputAdornment, Menu, MenuItem, Select, Tooltip, Typography } from '@mui/material';
+import { Avatar, Badge, Button, Input, InputAdornment, List, ListItem, ListItemText, Menu, MenuItem, Select, TextField, Tooltip, Typography } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import AppsIcon from '@mui/icons-material/Apps';
 import SailingOutlinedIcon from '@mui/icons-material/SailingOutlined';
 import TuneIcon from '@mui/icons-material/Tune';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import styled from 'styled-components';
+import orderFileData from '../assets/data/orders.json'
+import moment from 'moment';
 
 const drawerWidth: number = 250;
 
@@ -84,6 +88,47 @@ const Drawer = muiStyled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'ope
     }),
 );
 
+const StyledMenu = muiStyled((props: MenuProps) => (
+    <Menu
+      elevation={0}
+      anchorOrigin={{
+        vertical: 'bottom',
+        horizontal: 'right',
+      }}
+      transformOrigin={{
+        vertical: 'top',
+        horizontal: 'right',
+      }}
+      {...props}
+    />
+  ))(({ theme }) => ({
+    '& .MuiPaper-root': {
+      borderRadius: 6,
+      marginTop: theme.spacing(1),
+      minWidth: 180,
+      color:
+        theme.palette.mode === 'light' ? 'rgb(55, 65, 81)' : theme.palette.grey[300],
+      boxShadow:
+        'rgb(255, 255, 255) 0px 0px 0px 0px, rgba(0, 0, 0, 0.05) 0px 0px 0px 1px, rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px',
+      '& .MuiMenu-list': {
+        padding: '4px 0',
+      },
+      '& .MuiMenuItem-root': {
+        '& .MuiSvgIcon-root': {
+          fontSize: 18,
+          color: theme.palette.text.secondary,
+          marginRight: theme.spacing(1.5),
+        },
+        '&:active': {
+          backgroundColor: alpha(
+            theme.palette.primary.main,
+            theme.palette.action.selectedOpacity,
+          ),
+        },
+      },
+    },
+  }));
+
 const NavBar = styled(Box)`
     && {
         width: 100%;
@@ -123,8 +168,9 @@ const NavProfileDiv = styled('div')`
 
 const FilterCardDiv = styled(Grid)`
     && {
-        background-color: #F2EEEB;
         border-radius: 16px;
+        box-shadow: 1px 1px 2px 0px #0000004D;
+        margin-bottom: 1rem;
     }
     .filter-top-right-div {
         width: 100%;
@@ -160,6 +206,97 @@ const FilterCardDiv = styled(Grid)`
     }
 `
 
+const FilterDropdownBtn = styled(Button)`
+    && {
+        background-color: initial;
+        color: initial;
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+    }
+    &&:hover {
+        background-color: initial;
+        color: initial
+    }
+`
+
+const OrderListDiv = styled(Box)`
+    && {
+        width: 100%;
+        height: 100%;
+        /* background-color: #fff; */
+        border-radius: 16px;
+        margin-top: 1rem;
+    }
+    .heading {
+        font-size: 13px;
+        font-weight: 600;
+        color: #000;
+        display: flex;
+        align-items: center;
+    }
+    .count-div {
+        background-color: #D9D1C6;
+        color: #052E2B;
+        border-radius: 40%;
+        margin-left: 1rem;
+        line-height: 14px;
+        padding: 5px 8px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+`
+
+const OrderListItem = styled(Box)`
+    && {
+        width: 100%;
+        height: 100%;
+        background-color: #E8ECED;
+        border-radius: 16px;
+        margin-top: 1rem;
+        padding: 12px 16px 12px 16px;
+        border:  ${(props: any) => (props.selected ? "1px solid #052E2B" : "#E8ECED")} ;
+        box-shadow: ${(props: any) => (props.selected ? "0px 5px 8px 0px #00000024" : "none")};
+        
+    }
+    .order-id {
+        font-size: 14px;
+        font-weight: 700;
+        color: ${(props: any) => (props.selected ? "#052E2B" : "#00704B")};
+    }
+    .order-title {
+        font-size: 14px;
+        font-weight: ${(props: any) => (props.selected ? 600 : 500)};
+        color: "#020A08";
+    }
+    .order-status {
+        /* index+1 % 2 ? 2: (index+1)%3 ? 3 : 1 */
+        background-color: ${(props: any) => (props.orderDivis === 2 ? "#FF451A" : props.orderDivis === 3 ? "#FF9F1D" : "#008A25")};
+        height: fit-content;
+        padding: 5px;
+        border-radius: 100px;
+        color: #fff;
+    }
+    .upper-div {
+        display: flex;
+        justify-content: space-between;
+        align-items: top;
+    }
+    .lower-div {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        /* gap: 1rem; */
+        /* margin-top: 1rem; */
+    }
+    .order-type {
+        font-size: 12px;
+        font-weight: 500;
+        color: #697E85;
+    }
+
+`
+
 const defaultTheme = createTheme();
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
@@ -167,6 +304,10 @@ export default function Dashboard() {
     const [open, setOpen] = React.useState(false);
     // const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
     const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
+    // const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+
+    const [orderData, setOrderData] = React.useState<any[]>(orderFileData);
+    const [selectedOrder, setSelectedOrder] = React.useState<any>(orderData[0]);
     const toggleDrawer = () => {
         setOpen(!open);
     };
@@ -186,9 +327,19 @@ export default function Dashboard() {
         setAnchorElUser(null);
       };
 
+    const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+        setAnchorElUser(event.currentTarget);
+    };
+
+    const onOrderClicked = (e: any, order: any) => {
+        e.preventDefault();
+        console.log(order);
+        setSelectedOrder(order);
+    }
+
     return (
         <ThemeProvider theme={defaultTheme}>
-            <Box sx={{ display: 'flex' }}>
+            <Box sx={{ display: 'flex', backgroundColor: "#f5f5f5" }}>
                 <CssBaseline />
                 <Drawer variant="permanent" open={open} sx={{ backgroundColor: "#052E2B" }}>
                     <LeftSideBarItems>
@@ -279,17 +430,20 @@ export default function Dashboard() {
                                 </Box>
                             </div>
                         </NavBar>
-                        <FilterCardDiv container spacing={5}>
-                            <Grid item xs={12} md={2} lg={4}>
+                        <Grid container spacing={5} style={{ padding: "0rem", margin: "0rem", width: "100%" }}>
+                            <Grid item xs={12} md={2} lg={4} style={{ padding: 0, margin: 0 }}>
                                 <Paper
                                     sx={{
                                         p: 2,
                                         display: 'flex',
                                         flexDirection: 'column',
+                                        backgroundColor: "#f5f5f5",
+                                        border: "none",
+                                        boxShadow: "none"
                                     }}
                                 >
-                                    <Grid container>
-                                        <Grid item lg={6}>
+                                    <FilterCardDiv container style={{ lineHeight: "1rem", backgroundColor: "#F2EEEB" }} p={0}>
+                                        <Grid item lg={6} p={0}>
                                             <Input
                                                 id="input-with-icon-adornment"
                                                 startAdornment={
@@ -304,6 +458,8 @@ export default function Dashboard() {
                                                 }
                                                 className='filter-input-top-left'
                                                 disableUnderline
+                                                size='medium'
+                                                sx={{ paddingLeft: "0.5rem", minHeight: "100%" }}
                                                 />
                                         </Grid>
                                         <Grid item lg={6}>
@@ -314,6 +470,7 @@ export default function Dashboard() {
                                                     value={"po"}
                                                     onChange={() => {}}
                                                     className='filter-select-top'
+                                                    size='small'
                                                 >
                                                     <MenuItem value={"po"}>PO</MenuItem>
                                                     <MenuItem value={"wo"}>WO</MenuItem>
@@ -326,20 +483,173 @@ export default function Dashboard() {
                                                 </div>
                                             </div>
                                         </Grid>
-                                    </Grid>
+                                        <Grid item lg={6}>
+                                            <TextField
+                                                id="coy_id_filter_input"
+                                                label="Coy id"
+                                                placeholder='Enter coy id'
+                                                variant="standard"
+                                                sx={{ padding: "0.75rem 0rem", marginRight: "1rem" }}
+                                                />
+                                        </Grid>
+                                        <Grid item lg={6}>
+                                            <TextField
+                                                id="order_no_filter_input"
+                                                label="Order no"
+                                                placeholder='Enter order no'
+                                                variant="standard"
+                                                sx={{ padding: "0.75rem 0rem", marginLeft: "1rem" }}
+                                                />
+                                        </Grid>
+                                        <Grid item lg={6}>
+                                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                                <FilterDropdownBtn
+                                                    id="demo-customized-button"
+                                                    aria-controls={open ? 'demo-customized-menu' : undefined}
+                                                    aria-haspopup="true"
+                                                    aria-expanded={open ? 'true' : undefined}
+                                                    variant="contained"
+                                                    disableElevation
+                                                    onClick={handleClick}
+                                                    endIcon={<KeyboardArrowDownIcon />}
+                                                >
+                                                    Sort
+                                                </FilterDropdownBtn>
+                                                <StyledMenu
+                                                    id="demo-customized-menu"
+                                                    MenuListProps={{
+                                                    'aria-labelledby': 'demo-customized-button',
+                                                    }}
+                                                    anchorEl={anchorElUser}
+                                                    open={open}
+                                                    onClose={() => {}}
+                                                >
+                                                    <MenuItem onClick={(e) => {console.log(e)}} disableRipple>
+                                                        Status
+                                                    </MenuItem>
+                                                    <MenuItem onClick={(e) => {console.log(e)}} disableRipple>
+                                                        Type
+                                                    </MenuItem>
+                                                    <MenuItem onClick={(e) => {console.log(e)}} disableRipple>
+                                                        Authorised by
+                                                    </MenuItem>
+                                                </StyledMenu>
+                                                <FilterDropdownBtn
+                                                    id="demo-customized-button"
+                                                    aria-controls={open ? 'demo-customized-menu' : undefined}
+                                                    aria-haspopup="true"
+                                                    aria-expanded={open ? 'true' : undefined}
+                                                    variant="contained"
+                                                    disableElevation
+                                                    onClick={handleClick}
+                                                    endIcon={<KeyboardArrowDownIcon />}
+                                                >
+                                                    Group by
+                                                </FilterDropdownBtn>
+                                                <StyledMenu
+                                                    id="demo-customized-menu"
+                                                    MenuListProps={{
+                                                    'aria-labelledby': 'demo-customized-button',
+                                                    }}
+                                                    anchorEl={anchorElUser}
+                                                    open={open}
+                                                    onClose={() => {}}
+                                                >
+                                                    <MenuItem onClick={(e) => {console.log(e)}} disableRipple>
+                                                        Status
+                                                    </MenuItem>
+                                                    <MenuItem onClick={(e) => {console.log(e)}} disableRipple>
+                                                        Type
+                                                    </MenuItem>
+                                                    <MenuItem onClick={(e) => {console.log(e)}} disableRipple>
+                                                        Authorised by
+                                                    </MenuItem>
+                                                </StyledMenu>
+                                            </div>
+                                        </Grid>
+                                        <Grid item lg={6}>
+                                            <div style={{ display: "flex", justifyContent: "end" }}>
+                                                <FilterDropdownBtn
+                                                    id="demo-customized-button"
+                                                    variant="contained"
+                                                    disableElevation
+                                                    onClick={() => {}}
+                                                >
+                                                    Clear
+                                                </FilterDropdownBtn>
+                                                <FilterDropdownBtn
+                                                    id="demo-customized-button"
+                                                    variant="contained"
+                                                    disableElevation
+                                                    onClick={() => {}}
+                                                >
+                                                    Search
+                                                </FilterDropdownBtn>
+                                            </div>
+                                        </Grid>
+                                    </FilterCardDiv>
+
+                                    <OrderListDiv>
+                                        <p className='heading'>ORDERS <div className='count-div'>{orderData?.length || 0}</div></p>
+                                        <List sx={{ width: '100%', bgcolor: 'unset' }}>
+                                            {orderData.map((order, index) => {
+                                                return (
+                                                    <ListItem
+                                                        key={index+1}
+                                                        disablePadding
+                                                        onClick={(e) => {onOrderClicked(e, order)}}
+                                                        // secondaryAction={
+                                                        //     <IconButton edge="end" aria-label="delete">
+                                                        //         <DeleteIcon />
+                                                        //     </IconButton>
+                                                        // }
+                                                    >
+                                                        {/* {console.log(index+1 % 2 == 0 ? 2 : (index+1)%3 == 0 ? 3 : 1)} */}
+                                                        <OrderListItem selected={selectedOrder?.order_id === order?.order_id} orderDivis={(index+1) % 2 == 0 ? 2 : (index+1)%3 == 0 ? 3 : 1} >
+                                                            <div className="upper-div">
+                                                                <div>
+                                                                    <ListItemText disableTypography className="order-id" primary={order?.order_id} />
+                                                                    <ListItemText disableTypography className="order-title" primary={order?.title} />
+                                                                </div>
+                                                                <div className="order-status">{order?.status}</div>
+                                                            </div>
+                                                            <div className='lower-div'>
+                                                                <div>
+                                                                    <Button
+                                                                        component="label"
+                                                                        role={undefined}
+                                                                        variant="contained"
+                                                                        tabIndex={-1}
+                                                                        startIcon={<SailingOutlinedIcon />}
+                                                                        style={{ backgroundColor: "#80E7FF", color: "#04487F", borderRadius: "8px", boxShadow: "none" }}
+                                                                        >
+                                                                        Lorem Ipsum
+                                                                    </Button>
+                                                                </div>
+                                                                <div>
+                                                                <ListItemText disableTypography className="order-type" primary={order?.type} />
+                                                                <ListItemText disableTypography className="order-type" primary={moment(order?.authorised_supplier_info?.date_authorised).format('DD MMM YYYY')} />
+                                                                </div>
+                                                            </div>
+                                                        </OrderListItem>
+                                                    </ListItem>
+                                                )
+                                            })}
+                                        </List>
+                                    </OrderListDiv>
                                 </Paper>
                             </Grid>
                             <Grid item xs={12} md={4} lg={8}>
                                 <Paper
                                     sx={{
                                         p: 2,
-                                        display: 'flex',
-                                        flexDirection: 'column',
+                                        width: '100%',
                                     }}
+                                    disablePadding
                                 >
                                 </Paper>
                             </Grid>
-                        </FilterCardDiv>
+                        </Grid>
                     </Container>
                 </Box>
             </Box>
