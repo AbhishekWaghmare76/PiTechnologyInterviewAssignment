@@ -333,7 +333,7 @@ export const OrderDetailsPaper = styled(Paper)`
     font-weight: 500;
   }
   .order-head-right {
-    align-items: center;
+    align-items: flex-end;
     display: flex;
     flex-direction: column;
     justify-content: space-between;

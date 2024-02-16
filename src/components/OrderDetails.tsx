@@ -94,8 +94,9 @@ const OrderDetails = (props: any) => {
                             variant="contained"
                             disableElevation
                             onClick={() => { }}
+
                         >
-                            Clear
+                            Order Summary
                         </FilterDropdownBtn>
                         <FilterDropdownBtn
                             id="demo-customized-button"
@@ -103,7 +104,7 @@ const OrderDetails = (props: any) => {
                             disableElevation
                             onClick={() => { }}
                         >
-                            Search
+                            Order Progress
                         </FilterDropdownBtn>
                     </div>
                 </div>
