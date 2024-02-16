@@ -8,6 +8,7 @@ const App: React.FC = () => {
 <Router>
       <Routes>
         <Route path="/" element={<Dashboard />} />
+        <Route path="/:order-id" element={<Dashboard />} />
       </Routes>
     </Router>
 
